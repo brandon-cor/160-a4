@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CSE 160: Assignment 4 - 3D Lighting</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .canvas-section {
+        flex: 0 0 auto;
+        min-width: 400px;
+        margin-right: 20px;
+      }
+      .control-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .control-group {
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .control-group h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .slider-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .slider-container label {
+        width: 100px;
+        display: inline-block;
+      }
+      .slider {
+        flex-grow: 1;
+        margin: 0 10px;
+      }
+      .button-group {
+        display: flex;
+        gap: 10px;
+      }
+      canvas {
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        background-color: #fff;
+        display: block;
+      }
+      #info {
+        font-family: monospace;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>3D German Shepherd</h2>
+    
+    <div class="container">
+      <div class="canvas-section">
+        <canvas id="webgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+        <div id="info"></div>
+        <p id="numdot"></p>
+      </div>
+      
+      <div class="control-panel">
+        <!-- Visualization Controls -->
+        <div class="control-group">
+          <h3>Visualization Controls</h3>
+          <div class="button-group">
+            <button type="button" id="normalOn">Show Normals</button>
+            <button type="button" id="normalOff">Hide Normals</button>
+          </div>
+          <div class="button-group" style="margin-top: 10px;">
+            <button type="button" id="lightOn">Enable Lighting</button>
+            <button type="button" id="lightOff">Disable Lighting</button>
+          </div>
+        </div>
+        
+        <!-- Light Position Controls -->
+        <div class="control-group">
+          <h3>Light Position</h3>
+          <div class="slider-container">
+            <label for="lightSlideX">Light X:</label>
+            <input type="range" min="-250" max="250" value="0" class="slider" id="lightSlideX">
+            <span id="lightXValue">0</span>
+          </div>
+          <div class="slider-container">
+            <label for="lightSlideY">Light Y:</label>
+            <input type="range" min="-250" max="250" value="225" class="slider" id="lightSlideY">
+            <span id="lightYValue">225</span>
+          </div>
+          <div class="slider-container">
+            <label for="lightSlideZ">Light Z:</label>
+            <input type="range" min="-250" max="250" value="150" class="slider" id="lightSlideZ">
+            <span id="lightZValue">150</span>
+          </div>
+        </div>
+        
+        <!-- Animal Color Controls -->
+        <div class="control-group">
+          <h3>Animal Color Controls</h3>
+          <div class="slider-container">
+            <label for="bodyColorSlider">Body Color:</label>
+            <input type="range" min="0" max="100" value="0" class="slider" id="bodyColorSlider">
+            <span id="bodyColorValue">Black</span>
+          </div>
+        </div>
+        
+        <!-- Animal Animation Controls -->
+        <div class="control-group">
+          <h3>Animal Animation Controls</h3>
+          <div class="slider-container">
+            <label for="yellowSlide">Tail Angle:</label>
+            <input type="range" min="0" max="90" value="5" class="slider" id="yellowSlide">
+            <div class="button-group">
+              <button type="button" id="animationYellowOnButton">Auto</button>
+              <button type="button" id="animationYellowOffButton">Stop</button>
+            </div>
+          </div>
+          <div class="slider-container">
+            <label for="magentaSlide">Head Angle:</label>
+            <input type="range" min="0" max="90" value="5" class="slider" id="magentaSlide">
+            <div class="button-group">
+              <button type="button" id="animationMagentaOnButton">Auto</button>
+              <button type="button" id="animationMagentaOffButton">Stop</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Camera Controls -->
+        <div class="control-group">
+          <h3>Camera Controls</h3>
+          <div class="slider-container">
+            <label for="cameraAngle">Camera Angle:</label>
+            <input type="range" min="-180" max="180" value="-90" class="slider" id="cameraAngle">
+            <span id="cameraAngleValue">-90°</span>
+          </div>
+          <p><small>You can also click and drag on the canvas to rotate the view.</small></p>
+        </div>
+
+        <p><strong>Notes:</strong> This is a blocky German Shepherd with different lighting (ambient + diffuse + specular). 
+        The yellow cube shows the light position as it rotates around the world. You can adjust the light position using the sliders.
+        Use the visualization controls to toggle normal visualization and lighting effects.</p>
+      </div>
+    </div>
+
+    <!-- Load WebGL libraries first -->
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix-cse160.js"></script>
+
+    <!-- Load application scripts -->
+    <script src="Camera.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
+    <script src="BlockyAnimal.js"></script>
+    <script src="Lighting.js"></script>
+    <script>
+      // Wait for all scripts to load before initializing
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof main === 'function') {
+          main();
+        } else {
+          console.error('main function not found');
+        }
+      });
+    </script>
+  </body>
+</html>
